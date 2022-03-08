@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  account-service:
+    image: account-service
+    container_name: account-service 
+    build: 
+      context: ./account_service
+    networks: 
+      - pts-network
+    ports: 
+      - 3000:3000
+    depends_on: 
+      - database
+    volumes: 
+      - ./account_service/src:/app/src
+    restart: on-failure
+  
+  booking-service:
+    image: booking-service
+    container_name: booking-service 
+    build: 
+      context: ./booking_service
+    networks: 
+      - pts-network
+    ports: 
+      - 4000:4000
+    depends_on: 
+      - database
+    volumes: 
+      - ./booking_service/src:/app/src
+    restart: on-failure
+
+  database:
+    image: mysql
+    container_name: mysql
+    restart: always
+    environment: 
+      MYSQL_DATABASE: pts
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: jayasoo
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./db:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks: 
+      - pts-network
+
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    volumes:
+      - ./redis:/data
+    networks: 
+      - pts-network
+
+networks:
+  pts-network:
+    driver: bridge

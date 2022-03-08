@@ -1,0 +1,63 @@
+POST http://localhost:3000/patients
+content-type: application/json
+
+{
+    "id": "1234-56789-1234",
+    "name": "Jayasooryan K V",
+    "address": "payyanur, Kannur, Kerala",
+    "severity": "basic"
+}
+
+###
+GET http://localhost:3000/patients?id=1234-56789-1234
+content-type: application/json
+
+###
+DELETE http://localhost:3000/patients?id=1234-56789-1234
+content-type: application/json
+
+###
+PUT http://localhost:3000/patients
+content-type: application/json
+
+{
+    "id": "1234-56789-1234",
+    "name": "Jayasooryan Kottaram V",
+    "address": "payyanur, Kannur, Kerala",
+    "severity": "basic"
+}
+
+###
+POST http://localhost:3000/hospitals
+content-type: application/json
+
+{
+    "name": "Amrutha Hospital",
+    "address": "Kochi, Kerala",
+    "category": "paid",
+    "basic": 5,
+    "moderate": 2,
+    "emergency": 1
+}
+
+###
+GET http://localhost:3000/hospitals?id=d833b8ed-b22b-4fc9-80ec-58532aa79f18
+content-type: application/json
+
+###
+DELETE http://localhost:3000/hospitals?id=d833b8ed-b22b-4fc9-80ec-58532aa79f18
+content-type: application/json
+
+###
+PUT http://localhost:3000/hospitals
+content-type: application/json
+
+{
+    "id": 1,
+    "name": "Amrutha Hospital",
+    "address": "Kochi, Kerala",
+    "category": "paid",
+    "basic": 5,
+    "moderate": 2,
+    "emergency": 2
+}
