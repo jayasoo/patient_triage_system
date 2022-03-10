@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const dbParams = require('../database');
+const mysql = require('mysql2/promise');
 const redis = require('redis');
 const { v4: uuidv4 } = require('uuid');
 
@@ -9,7 +10,7 @@ require('dotenv').config();
 router.post('/', async(req, res) => {
   const hospital_id = uuidv4();
   try {
-    db_connection = await db.promise().getConnection();
+    const db_connection = await mysql.createConnection(dbParams);
     await db_connection.query('START TRANSACTION');
     // Insert Hospital to DB
     await db_connection.execute(
@@ -23,7 +24,7 @@ router.post('/', async(req, res) => {
       [hospital_id, req.body.basic, req.body.moderate, req.body.emergency]
     )
     await db_connection.query('COMMIT');
-    db_connection.release();
+    await db_connection.end();
 
     // Store bed availability in Redis
     const redisClient = redis.createClient({url: process.env.REDIS_URL});
@@ -35,14 +36,15 @@ router.post('/', async(req, res) => {
   } catch (err) {
     console.log(err);
     await db_connection.query('ROLLBACK');
-    db_connection.release();
+    await db_connection.end();
     return res.sendStatus(500);
   }
 });
 
 router.get('/', async(req, res) => {
+  const db_connection = await mysql.createConnection(dbParams);
   try {
-    const [results, fields] = await db.promise().execute('SELECT * FROM HOSPITAL WHERE id = ?', [req.query.id]);
+    const [results, fields] = await db_connection.execute('SELECT * FROM HOSPITAL WHERE id = ?', [req.query.id]);
     if (results.length > 0)
       return res.json(results[0]);
     else
@@ -50,19 +52,21 @@ router.get('/', async(req, res) => {
   } catch (err) {
     console.log(err);
     return res.sendStatus(500);
+  } finally {
+    await db_connection.end();
   }
 });
 
 router.delete('/', async(req, res) => {
   try {
-    db_connection = await db.promise().getConnection();
+    const db_connection = await mysql.createConnection(dbParams);
     await db_connection.query('START TRANSACTION');
     // Remove hospital from hospital table as well as availability table
     const hospital_id = req.query.id;
     await db_connection.execute('DELETE FROM HOSPITAL WHERE id = ?', [hospital_id]);
     await db_connection.execute('DELETE FROM AVAILABILITY WHERE id = ?', [hospital_id]);
     await db_connection.query('COMMIT');
-    db_connection.release();
+    await db_connection.end();
 
     // Remove hospital from Redis
     const redisClient = redis.createClient({url: process.env.REDIS_URL});
@@ -74,7 +78,7 @@ router.delete('/', async(req, res) => {
   } catch (err) {
     console.log(err);
     await db_connection.query('ROLLBACK');
-    db_connection.release();
+    await db_connection.end();
     return res.sendStatus(500);
   }
 });
@@ -82,7 +86,7 @@ router.delete('/', async(req, res) => {
 router.put('/', async(req, res) => {
   try {
     const hospital_id = req.body.id;
-    db_connection = await db.promise().getConnection();
+    const db_connection = await mysql.createConnection(dbParams);
     await db_connection.query('START TRANSACTION');
 
     // Calculate current booking and updated availability
@@ -109,7 +113,7 @@ router.put('/', async(req, res) => {
     if (req.body.basic < current_booking_count.basic || req.body.moderate < current_booking_count.moderate || req.body.emergency < current_booking_count.emergency) {
       console.log('Bed capacity less than current booking')
       await db_connection.query('ROLLBACK');
-      db_connection.release();
+      await db_connection.end();
       return res.status(400).json({message: 'Bed capacity less than current booking'});
     }
 
@@ -125,7 +129,7 @@ router.put('/', async(req, res) => {
       [req.body.basic - current_booking_count.basic, req.body.moderate - current_booking_count.moderate, req.body.emergency - current_booking_count.emergency, hospital_id]
     )
     await db_connection.query('COMMIT');
-    db_connection.release();
+    await db_connection.end();
 
     // Update bed availability in Redis
     const redisClient = redis.createClient({url: process.env.REDIS_URL});
@@ -137,7 +141,7 @@ router.put('/', async(req, res) => {
   } catch (err) {
     console.log(err);
     await db_connection.query('ROLLBACK');
-    db_connection.release();
+    await db_connection.end();
     return res.sendStatus(500);
   }
 });
