@@ -95,10 +95,10 @@ if __name__ == '__main__':
   hospital_ids = create_hospitals('http://localhost', int(args.hospitals))
   print(f'Created hospitals: {hospital_ids}')
   stat = get_availability('http://localhost')
-  print(f'Available beds before booking: {json.dumps(stat, indent=2)}')
+  print(f'\nAvailable beds before booking: {json.dumps(stat, indent=2)}\n')
   if int(args.book) > 0:
     create_booking('http://localhost', args.category, args.severity, patient_ids, int(args.book), 10)
     stat = get_availability('http://localhost')
-    print(f'Available beds after booking: {json.dumps(stat, indent=2)}')
+    print(f'\nAvailable beds after booking: {json.dumps(stat, indent=2)}\n')
 
 

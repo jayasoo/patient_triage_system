@@ -30,7 +30,7 @@ router.get('/', async(req, res) => {
     if (results.length > 0)
       return res.json(results[0]);
     else
-      return res.json({})
+      return res.status(400).json({'message': 'Invalid patient id'});
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -58,7 +58,7 @@ router.delete('/', async(req, res) => {
 router.put('/', async(req, res) => {
   const db_connection = await mysql.createConnection(dbParams);
   try {
-    const [results, fields] = await db_connection.db.execute(
+    const [results, fields] = await db_connection.execute(
       'UPDATE PATIENT SET id = ?, person_name = ?, address = ?, severity = ? where id = ?',
       [req.body.id, req.body.name, req.body.address, req.body.severity, req.body.id],
     );

@@ -79,8 +79,9 @@ router.post('/cancel-booking', async(req, res) => {
       return res.sendStatus(400);
     }
     booking = bookings[0];
+    console.log(booking)
     // Check whether booking is already cancelled or discharged
-    if (booking.cancelled || booking.discharged_on) {
+    if (booking.cancelled_on || booking.discharged_on) {
       console.log(`booking id ${req.body.booking_id} can't be cancelled`)
       await db_connection.query('ROLLBACK');
       await db_connection.end();
@@ -123,7 +124,7 @@ router.post('/admit', async(req, res) => {
     }
     booking = bookings[0];
     // Check whether the booking is already admitted/cancelled/discharged
-    if (booking.cancelled || booking.registered_on || booking.discharged_on) {
+    if (booking.cancelled_on || booking.registered_on || booking.discharged_on) {
       console.log(`booking id ${req.body.booking_id} can't be admitted`)
       await db_connection.query('ROLLBACK');
       await db_connection.end();
@@ -159,7 +160,7 @@ router.post('/discharge', async(req, res) => {
     }
     booking = bookings[0];
     // Check whether booking is already cancelled or discharged
-    if (booking.cancelled || booking.discharged_on) {
+    if (booking.cancelled_on || booking.discharged_on) {
       console.log(`booking id ${req.body.booking_id} can't be discharged`)
       await db_connection.query('ROLLBACK');
       await db_connection.end();

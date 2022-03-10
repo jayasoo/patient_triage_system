@@ -48,7 +48,7 @@ router.get('/', async(req, res) => {
     if (results.length > 0)
       return res.json(results[0]);
     else
-      return res.json({})
+      return res.status(400).json({'message': 'Invalid hopital id'});
   } catch (err) {
     console.log(err);
     return res.sendStatus(500);
@@ -58,13 +58,13 @@ router.get('/', async(req, res) => {
 });
 
 router.delete('/', async(req, res) => {
+  const db_connection = await mysql.createConnection(dbParams);
   try {
-    const db_connection = await mysql.createConnection(dbParams);
     await db_connection.query('START TRANSACTION');
     // Remove hospital from hospital table as well as availability table
     const hospital_id = req.query.id;
     await db_connection.execute('DELETE FROM HOSPITAL WHERE id = ?', [hospital_id]);
-    await db_connection.execute('DELETE FROM AVAILABILITY WHERE id = ?', [hospital_id]);
+    await db_connection.execute('DELETE FROM AVAILABILITY WHERE hospital_id = ?', [hospital_id]);
     await db_connection.query('COMMIT');
     await db_connection.end();
 
